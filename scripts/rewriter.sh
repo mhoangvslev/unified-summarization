@@ -1,8 +1,18 @@
-TRAIN_PATH='data/finished_files/chunked/train_*'
-VAL_PATH='data/finished_files/chunked/val_*'
-TEST_PATH='data/finished_files/chunked/test_*'
-VOCAB_PATH='data/finished_files/vocab'
-EXP_NAME='exp_sample'
+if [ ! $# -eq 3 ]; then
+    echo "Mismatch number of arguments. Given $#, required 3"
+    echo "sh script/rewriter.sh <MODE> <path/to/data> <EXP_NAME>"
+    exit 1
+fi
+
+MODE=$1; shift;
+DATA_PATH=$(realpath $1/finished_files); shift;
+
+TRAIN_PATH="$DATA_PATH/chunked/train_*"
+VAL_PATH="$DATA_PATH/chunked/val_*"
+TEST_PATH="$DATA_PATH/chunked/test_*"
+VOCAB_PATH="$DATA_PATH/vocab"
+EXP_NAME="$1"; shift;
+
 MAX_ITER=10000
 SAVE_MODEL_EVERY=1000
 MAX_TO_KEEP=10
@@ -14,13 +24,8 @@ START_EVAL=10000
 SINGLE_PASS=True  # if evaluating by loss, change singel_pass to False
 
 # for evalall mode
-LOAD_BEST_EVAL_MODEL=False
+LOAD_BEST_EVAL_MODEL=True
 CKPT_PATH=''
-
-#################
-MODE='train'
-#################
-
 
 if [ "$MODE" = "train" ]
 then
@@ -46,7 +51,7 @@ then
 elif [ "$MODE" = "eval" ]
 then
   python main.py --model=rewriter --mode=eval --data_path=$VAL_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --max_enc_steps=400 --max_dec_steps=120 --coverage=False --batch_size=64 --eval_method=$EVAL_METHOD --decode_method=$DECODE_METHOD --start_eval_rouge=$START_EVAL --save_model_every=$SAVE_MODEL_EVERY --single_pass=$SINGLE_PASS
-elif [ "$MODE" = "evalall" ]
+elif [ "$MODE" = "decode" ]
 then
   # decode
   python main.py --model=rewriter --mode=evalall --data_path=$TEST_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --max_enc_steps=400 --max_dec_steps=120 --coverage=True --decode_method=beam --single_pass=1 --eval_method=$EVAL_METHOD --load_best_eval_model=$LOAD_BEST_EVAL_MODEL --eval_ckpt_path=$CKPT_PATH

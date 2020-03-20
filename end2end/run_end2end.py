@@ -21,7 +21,7 @@ import time
 import os
 import tensorflow as tf
 import numpy as np
-import cPickle as pk
+import pickle as pk
 import util
 import pdb
 
@@ -142,7 +142,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer, \
         else:
           sv.saver.save(sess, ckpt_path, global_step=train_step)
 
-      print 'Step: ', train_step
+      print("Step: ", train_step)
 
 
 def run_eval(model, batcher):

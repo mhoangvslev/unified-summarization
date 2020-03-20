@@ -4,28 +4,24 @@ This is the official codes for the paper: [A Unified Model for Extractive and Ab
 
 ## Requirements
 
-* Python 2.7
-* [Tensoflow 1.1.0](https://www.tensorflow.org/versions/r1.1/)
+* Python 3.5
+* [Tensoflow 1.2.1](https://www.tensorflow.org/versions/r1.2/)
 * [pyrouge](https://pypi.org/project/pyrouge/) (for evaluation)
 * tqdm
-* [Standford CoreNLP 3.7.0](https://stanfordnlp.github.io/CoreNLP/) (for data preprocessing)
+* [Standford CoreNLP 3.9.2](https://stanfordnlp.github.io/CoreNLP/) (for data preprocessing)
 * [NLTK](https://www.nltk.org/) (for data preprocessing)
 
 
-**Note**: Stanford CoreNLP 3.7.0 can be downloaded from [here](http://nlp.stanford.edu/software/stanford-corenlp-full-2016-10-31.zip).
+**Note**: Stanford CoreNLP 3.9.2 can be downloaded from [here](http://nlp.stanford.edu/software/stanford-corenlp-full-2016-10-31.zip).
 
 **Note**: To use ROUGE evaluation, you need to download the `ROUGE-1.5.5` package from [here](https://github.com/andersjo/pyrouge). Next, follow the instrunction from [here](https://pypi.org/project/pyrouge/) to install pyrouge and set the ROUGE path to your absolute path of `ROUGE-1.5.5` directory.
 
 **Error Handling**: If you encounter the error message `Cannot open exception db file for reading: /path/to/ROUGE-1.5.5/data/WordNet-2.0.exc.db` when using pyrouge, the problem can be solved from [here](https://github.com/tagucci/pythonrouge#error-handling).
 
-## CNN/Daily Mail dataset
-
-Codes for generating the dataset is in `data` folder.
-
-We modified the preprocessing code from [this repository](https://github.com/abisee/cnn-dailymail).
-
-You can use our preprocessing codes ([data/make_datafiles.py](./data/make_datafiles.py) and [data/rouge_not_a_wrapper.py](./data/rouge_not_a_wrapper.py)) and follow their instrunctions of [Option 2](https://github.com/abisee/cnn-dailymail#option-2-process-the-data-yourself) to obtain the preprocessed data for our model.
-
+## Dataset
+```sh
+sh scripts/process.sh path/to/dataset/ path/to/output/ trainRate
+```
 
 ## How to train
 

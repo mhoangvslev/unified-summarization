@@ -21,7 +21,7 @@ import time
 import os
 import tensorflow as tf
 import numpy as np
-import cPickle as pk
+import pickle as pk
 import util
 import pdb
 
@@ -39,23 +39,23 @@ def convert_to_coverage_model():
 
   # initialize an entire coverage model from scratch
   sess = tf.Session(config=util.get_config())
-  print "initializing everything..."
+  print("initializing everything...")
   sess.run(tf.global_variables_initializer())
 
   # load all non-coverage weights from checkpoint
   saver = tf.train.Saver([v for v in tf.global_variables() if "coverage" not in v.name and "Adagrad" not in v.name])
-  print "restoring non-coverage variables..."
+  print("restoring non-coverage variables...")
   curr_ckpt = util.load_ckpt(saver, sess)
-  print "restored."
+  print("restored.")
 
   # save this model and quit
   ckpt_path = os.path.join(FLAGS.log_root, "train", "model.ckpt_cov")
   step = curr_ckpt.split('-')[1]
   new_fname = ckpt_path + '-' + step + '-init'
-  print "saving model to %s..." % (new_fname)
+  print("saving model to %s..." % (new_fname))
   new_saver = tf.train.Saver() # this one will save all variables that now exist
   new_saver.save(sess, new_fname)
-  print "saved."
+  print("saved.")
   exit()
 
 
@@ -131,7 +131,7 @@ def run_training(model, batcher, sess_context_manager, sv, summary_writer):
       if train_step % FLAGS.save_model_every == 0:
         sv.saver.save(sess, ckpt_path, global_step=train_step)
 
-      print 'Step: ', train_step
+      print("Step: ", train_step)
 
 
 def run_eval(model, batcher):

@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.core.example import example_pb2
 import struct
 import data
-import cPickle as pk
+import pickle as pk
 import pyrouge
 import util
 import logging

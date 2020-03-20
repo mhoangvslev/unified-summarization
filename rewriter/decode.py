@@ -20,9 +20,9 @@ import os
 import time
 import tensorflow as tf
 from batcher import Batcher
-import beam_search
+import rewriter.beam_search
 import data
-import cPickle as pk
+import pickle as pk
 import json
 import pyrouge
 import util
@@ -238,11 +238,11 @@ class BeamSearchDecoder(object):
 
 def print_results(article, abstract, decoded_output):
   """Prints the article, the reference summmary and the decoded summary to screen"""
-  print ""
+  print("")
   tf.logging.info('ARTICLE:  %s', article)
   tf.logging.info('REFERENCE SUMMARY: %s', abstract)
   tf.logging.info('GENERATED SUMMARY: %s', decoded_output)
-  print ""
+  print("")
 
 
 def make_html_safe(s):

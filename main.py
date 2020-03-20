@@ -155,7 +155,7 @@ def main(unused_argv):
   # Make a namedtuple hps, containing the values of the hyperparameters that the model needs
   hparam_list = ['model', 'mode', 'eval_method', 'selector_loss_wt', 'inconsistent_loss', 'inconsistent_topk', 'lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm', 'hidden_dim_selector', 'hidden_dim_rewriter','emb_dim', 'batch_size', 'max_art_len', 'max_sent_len', 'max_dec_steps', 'max_enc_steps', 'coverage', 'cov_loss_wt', 'eval_gt_rouge', 'decode_method']
   hps_dict = {}
-  for key,val in FLAGS.__flags.iteritems(): # for each flag
+  for key,val in FLAGS.__flags.items(): # for each flag
     if key in hparam_list: # if it's in the list
       hps_dict[key] = val # add it to the dict
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
@@ -167,7 +167,7 @@ def main(unused_argv):
 
   if FLAGS.model == 'selector':
     if hps.mode == 'train':
-      print "creating model..."
+      print("creating model...")
       model = SentenceSelector(hps, vocab)
       run_selector.setup_training(model, batcher)
     elif hps.mode == 'eval':
@@ -179,7 +179,7 @@ def main(unused_argv):
       evaluator.evaluate()
   elif FLAGS.model == 'rewriter':
     if hps.mode == 'train':
-      print "creating model..."
+      print("creating model...")
       model = Rewriter(hps, vocab)
       run_rewriter.setup_training(model, batcher)
     elif hps.mode == 'eval':
@@ -199,7 +199,7 @@ def main(unused_argv):
       decoder.evaluate() # decode indefinitely (unless single_pass=True, in which case deocde the dataset exactly once)
   elif FLAGS.model == 'end2end':
     if hps.mode == 'train':
-      print "creating model..."
+      print("creating model...")
       select_model = SentenceSelector(hps, vocab)
       rewrite_model = Rewriter(hps, vocab)
       end2end_model = SelectorRewriter(hps, select_model, rewrite_model)

@@ -2,9 +2,9 @@ import os
 import time
 import tensorflow as tf
 from batcher import Batcher
-import beam_search
+import end2end.beam_search
 import data
-import cPickle as pk
+import pickle as pk
 import json
 import pyrouge
 import util

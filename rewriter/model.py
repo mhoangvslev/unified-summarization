@@ -21,7 +21,7 @@ import sys
 import time
 import numpy as np
 import tensorflow as tf
-from attention_decoder import attention_decoder_one_step
+from rewriter.attention_decoder import attention_decoder_one_step
 from tensorflow.contrib.tensorboard.plugins import projector
 import data
 
@@ -569,7 +569,7 @@ class Rewriter(object):
     results = sess.run(to_return, feed_dict=feed) # run the decoder step
 
     # Convert results['states'] (a single LSTMStateTuple) into a list of LSTMStateTuple -- one for each hypothesis
-    new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in xrange(beam_size)]
+    new_states = [tf.contrib.rnn.LSTMStateTuple(results['states'].c[i, :], results['states'].h[i, :]) for i in range(beam_size)]
 
     # Convert a tensor to a list of k arrays
     attn_dists = results['attn_dists'][0].tolist()
@@ -583,7 +583,7 @@ class Rewriter(object):
       new_coverage = results['coverage'].tolist()
       assert len(new_coverage) == beam_size
     else:
-      new_coverage = [None for _ in xrange(beam_size)]
+      new_coverage = [None for _ in range(beam_size)]
 
     if self._hps.model == 'end2end':
       attn_dists_norescale = results['attn_dists_norescale'][0].tolist()

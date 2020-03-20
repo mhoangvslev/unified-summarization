@@ -134,10 +134,10 @@ def get_select_AP(article_sents, probs, gt_selected_ids, step=0.1, method='prob'
     recall.append(r)
     accuracy.append(acc)
     ratios.append(ratio)
-  #print 'precision:', precision
-  #print 'recall:', recall
-  #print 'avg precision:', sum(precision)/len(precision)
-  #print 'avg recall:', sum(recall)/len(recall)
+  #print("precision:", precision)
+  #print("recall:", recall)
+  #print("avg precision:", sum(precision)/len(precision))
+  #print("avg recall:", sum(recall)/len(recall))
   avg_p = sum(precision)/len(precision)
   avg_r = sum(recall)/len(recall)
   avg_acc = sum(accuracy)/len(accuracy)

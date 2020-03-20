@@ -33,122 +33,126 @@ import pdb
 
 
 def _get_ngrams(n, text):
-  """Calcualtes n-grams.
-  Args:
-    n: which n-grams to calculate
-    text: An array of tokens
-  Returns:
-    A set of n-grams
-  """
-  ngram_dict = defaultdict(int)
-  text_length = len(text)
-  max_index_ngram_start = text_length - n + 1
-  for i in range(max_index_ngram_start):
-    if n > 1:
-      ngram_dict[tuple(text[i:i + n])] += 1
-    else:
-      ngram_dict[text[i]] += 1
-  return ngram_dict, max_index_ngram_start
+    """Calcualtes n-grams.
+    Args:
+      n: which n-grams to calculate
+      text: An array of tokens
+    Returns:
+      A set of n-grams
+    """
+    ngram_dict = defaultdict(int)
+    text_length = len(text)
+    max_index_ngram_start = text_length - n + 1
+    for i in range(max_index_ngram_start):
+        if n > 1:
+            ngram_dict[tuple(text[i:i + n])] += 1
+        else:
+            ngram_dict[text[i]] += 1
+    return ngram_dict, max_index_ngram_start
+
 
 def _preprocess(sentence):
-  """preprocess one sentence (a single string)"""
-  #s = sentence.decode('utf-8')
-  s = sentence.lower()
-  s = re.sub('-', ' - ', s.decode('utf-8'))
-  #s = re.sub('-', ' - ', s)
-  s = re.sub('[^A-Za-z0-9\-]', ' ', s) # replace not A~Z, a~z, 0~9 to a space
-  s = s.strip()
-  return s
+    """preprocess one sentence (a single string)"""
+    #s = sentence
+    lowerS = sentence.lower()
+    s = str(sentence.lower(), 'utf-8') if isinstance(lowerS, bytes) else lowerS
+    s = re.sub('-', ' - ', s)
+    #s = re.sub('-', ' - ', s)
+    # replace not A~Z, a~z, 0~9 to a space
+    s = re.sub('[^A-Za-z0-9\-]', ' ', s)
+    s = s.strip()
+    return s
+
 
 def _split_into_words(sentences):
-  """Splits multiple sentences into words and flattens the result.
-     sentences: list of strings"""
+    """Splits multiple sentences into words and flattens the result.
+       sentences: list of strings"""
 
-  return list(itertools.chain(*[_preprocess(s).split() for s in sentences]))
+    return list(itertools.chain(*[_preprocess(s).split() for s in sentences]))
 
 
 def _get_word_ngrams(n, sentences):
-  """Calculates word n-grams for multiple sentences.
-  """
-  assert len(sentences) > 0
-  assert n > 0
+    """Calculates word n-grams for multiple sentences.
+    """
+    assert len(sentences) > 0
+    assert n > 0
 
-  words = _split_into_words(sentences)
-  return _get_ngrams(n, words)
+    words = _split_into_words(sentences)
+    return _get_ngrams(n, words)
 
 
 def _len_lcs(x, y):
-  """
-  Returns the length of the Longest Common Subsequence between sequences x
-  and y.
-  Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
-  Args:
-    x: sequence of words
-    y: sequence of words
-  Returns
-    integer: Length of LCS between x and y
-  """
-  table = _lcs(x, y)
-  n, m = len(x), len(y)
-  return table[n, m]
+    """
+    Returns the length of the Longest Common Subsequence between sequences x
+    and y.
+    Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
+    Args:
+      x: sequence of words
+      y: sequence of words
+    Returns
+      integer: Length of LCS between x and y
+    """
+    table = _lcs(x, y)
+    n, m = len(x), len(y)
+    return table[n, m]
 
 
 def _lcs(x, y):
-  """
-  Computes the length of the longest common subsequence (lcs) between two
-  strings. The implementation below uses a DP programming algorithm and runs
-  in O(nm) time where n = len(x) and m = len(y).
-  Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
-  Args:
-    x: collection of words
-    y: collection of words
-  Returns:
-    Table of dictionary of coord and len lcs
-  """
-  n, m = len(x), len(y)
-  table = dict()
-  for i in range(n + 1):
-    for j in range(m + 1):
-      if i == 0 or j == 0:
-        table[i, j] = 0
-      elif x[i - 1] == y[j - 1]:
-        table[i, j] = table[i - 1, j - 1] + 1
-      else:
-        table[i, j] = max(table[i - 1, j], table[i, j - 1])
-  return table
+    """
+    Computes the length of the longest common subsequence (lcs) between two
+    strings. The implementation below uses a DP programming algorithm and runs
+    in O(nm) time where n = len(x) and m = len(y).
+    Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
+    Args:
+      x: collection of words
+      y: collection of words
+    Returns:
+      Table of dictionary of coord and len lcs
+    """
+    n, m = len(x), len(y)
+    table = dict()
+    for i in range(n + 1):
+        for j in range(m + 1):
+            if i == 0 or j == 0:
+                table[i, j] = 0
+            elif x[i - 1] == y[j - 1]:
+                table[i, j] = table[i - 1, j - 1] + 1
+            else:
+                table[i, j] = max(table[i - 1, j], table[i, j - 1])
+    return table
 
 
 def _recon_lcs(x, y):
-  """
-  Returns the Longest Subsequence between x and y.
-  Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
-  Args:
-    x: sequence of words, a reference sentence
-    y: sequence of words, a evaluated sentence
-  Returns:
-    sequence: LCS of x and y, 
-              a list of tuples, 
-              each tuple indicates (hit unigram, unigram index in x)
-  """
-  i, j = len(x), len(y)
-  table = _lcs(x, y)
-  if table[i, j] == 0:
-    return []
-  
-  lcs = []
-  while 1:
-    if i == 0 or j == 0:
-      break
-    elif x[i - 1] == y[j - 1]:
-      lcs = [(x[i - 1], i - 1)] + lcs
-      i = i - 1
-      j = j - 1
-    elif table[i - 1, j] > table[i, j - 1]:
-      i = i - 1
-    else:
-      j = j - 1
+    """
+    Returns the Longest Subsequence between x and y.
+    Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
+    Args:
+      x: sequence of words, a reference sentence
+      y: sequence of words, a evaluated sentence
+    Returns:
+      sequence: LCS of x and y, 
+                a list of tuples, 
+                each tuple indicates (hit unigram, unigram index in x)
+    """
+    i, j = len(x), len(y)
+    table = _lcs(x, y)
+    if table[i, j] == 0:
+        return []
 
-  '''
+    lcs = []
+    while 1:
+        if i == 0 or j == 0:
+            break
+        elif x[i - 1] == y[j - 1]:
+            lcs = [(x[i - 1], i - 1)] + lcs
+            i = i - 1
+            j = j - 1
+        elif table[i - 1, j] > table[i, j - 1]:
+            i = i - 1
+        else:
+            j = j - 1
+
+    '''
   def _recon(i, j):
     """private recon calculation"""
     if i == 0 or j == 0:
@@ -163,82 +167,85 @@ def _recon_lcs(x, y):
   LCS = _recon(len(x), len(y))
   pdb.set_trace()
   '''
-  return lcs
+    return lcs
 
 
 def rouge_n(evaluated_sentences, reference_sentences, n=2):
-  """
-  Computes ROUGE-N of two text collections of sentences.
-  Sourece: http://research.microsoft.com/en-us/um/people/cyl/download/
-  papers/rouge-working-note-v1.3.1.pdf
-  Args:
-    evaluated_sentences: The sentences that have been picked by the summarizer
-    reference_sentences: The sentences from the referene set
-    n: Size of ngram.  Defaults to 2.
-  Returns:
-    A tuple (f1, precision, recall) for ROUGE-N
-  Raises:
-    ValueError: raises exception if a param has len <= 0
-  """
-  if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
-    #raise ValueError("Collections must contain at least 1 sentence.")
-    return 0.0, 0.0, 0.0
+    """
+    Computes ROUGE-N of two text collections of sentences.
+    Sourece: http://research.microsoft.com/en-us/um/people/cyl/download/
+    papers/rouge-working-note-v1.3.1.pdf
+    Args:
+      evaluated_sentences: The sentences that have been picked by the summarizer
+      reference_sentences: The sentences from the referene set
+      n: Size of ngram.  Defaults to 2.
+    Returns:
+      A tuple (f1, precision, recall) for ROUGE-N
+    Raises:
+      ValueError: raises exception if a param has len <= 0
+    """
+    if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
+        #raise ValueError("Collections must contain at least 1 sentence.")
+        return 0.0, 0.0, 0.0
 
-  evaluated_ngrams, evaluated_count = _get_word_ngrams(n, evaluated_sentences)
-  reference_ngrams, reference_count = _get_word_ngrams(n, reference_sentences)
+    evaluated_ngrams, evaluated_count = _get_word_ngrams(
+        n, evaluated_sentences)
+    reference_ngrams, reference_count = _get_word_ngrams(
+        n, reference_sentences)
 
-  # Gets the overlapping ngrams between evaluated and reference
-  overlapping_count = 0
-  for ngram in reference_ngrams:
-    if ngram in evaluated_ngrams:
-      count1 = reference_ngrams[ngram]
-      count2 = evaluated_ngrams[ngram]
-      hit = count1 if count1 < count2 else count2
-      overlapping_count += hit
+    # Gets the overlapping ngrams between evaluated and reference
+    overlapping_count = 0
+    for ngram in reference_ngrams:
+        if ngram in evaluated_ngrams:
+            count1 = reference_ngrams[ngram]
+            count2 = evaluated_ngrams[ngram]
+            hit = count1 if count1 < count2 else count2
+            overlapping_count += hit
 
-  return _f_p_r_1(overlapping_count, reference_count, evaluated_count)
+    return _f_p_r_1(overlapping_count, reference_count, evaluated_count)
 
 
 def _f_p_r_1(l, m, n):
-  """
-  Computes the F-measure score
-  Args:
-    l: overlapping count
-    m: number of words in reference summary
-    n: number of words in candidate summary
-  Returns:
-    Float. F-measure score, Precision score, Recall score
-  """
-  r = l / m if m > 0 else 0.0
-  p = l / n if n > 0 else 0.0
+    """
+    Computes the F-measure score
+    Args:
+      l: overlapping count
+      m: number of words in reference summary
+      n: number of words in candidate summary
+    Returns:
+      Float. F-measure score, Precision score, Recall score
+    """
+    r = l / m if m > 0 else 0.0
+    p = l / n if n > 0 else 0.0
 
-  if r + p == 0:
-    f = 0.0
-  else:
-    f = 2.0 * ((r * p) / (r + p))
-  return f, p, r
+    if r + p == 0:
+        f = 0.0
+    else:
+        f = 2.0 * ((r * p) / (r + p))
+    return f, p, r
 
 
 def _f_p_r_2(l, m, n):
-  """
-  Computes the LCS-based F-measure score
-  Source: http://research.microsoft.com/en-us/um/people/cyl/download/papers/
-  rouge-working-note-v1.3.1.pdf
-  Args:
-    l: overlapping count
-    m: number of words in reference summary
-    n: number of words in candidate summary
-  Returns:
-    Float. LCS-based F-measure score
-  """
-  r = l / m if m > 0 else 0.0
-  p = l / n if n > 0 else 0.0
-  
-  beta = p / (r + 1e-12)
-  num = (1 + (beta**2)) * r * p
-  denom = r + ((beta**2) * p)
-  f =  num / (denom + 1e-12)
-  return f, p, r
+    """
+    Computes the LCS-based F-measure score
+    Source: http://research.microsoft.com/en-us/um/people/cyl/download/papers/
+    rouge-working-note-v1.3.1.pdf
+    Args:
+      l: overlapping count
+      m: number of words in reference summary
+      n: number of words in candidate summary
+    Returns:
+      Float. LCS-based F-measure score
+    """
+    r = l / m if m > 0 else 0.0
+    p = l / n if n > 0 else 0.0
+
+    beta = p / (r + 1e-12)
+    num = (1 + (beta**2)) * r * p
+    denom = r + ((beta**2) * p)
+    f = num / (denom + 1e-12)
+    return f, p, r
+
 
 '''
 def rouge_l_sentence_level(evaluated_sentences, reference_sentences):
@@ -273,83 +280,86 @@ def rouge_l_sentence_level(evaluated_sentences, reference_sentences):
   return _f_p_r_1(lcs, m, n)
 '''
 
+
 def _union_lcs(evaluated_sentences, reference_sentence):
-  """
-  Returns LCS_u(r_i, C) which is the LCS score of the union longest common
-  subsequence between reference sentence ri and candidate summary C. For example
-  if r_i= w1 w2 w3 w4 w5, and C contains two sentences: c1 = w1 w2 w6 w7 w8 and
-  c2 = w1 w3 w8 w9 w5, then the longest common subsequence of r_i and c1 is
-  “w1 w2” and the longest common subsequence of r_i and c2 is “w1 w3 w5”. The
-  union longest common subsequence of r_i, c1, and c2 is “w1 w2 w3 w5” and
-  LCS_u(r_i, C) = 4.
-  Args:
-    evaluated_sentences: The sentences that have been picked by the summarizer
-    reference_sentence: One of the sentences in the reference summaries
-  Returns:
-    a list of tuples, each tuple indicates (hit_unigram, unigram index in reference)
-  ValueError:
-    Raises exception if a param has len <= 0
-  """
-  if len(evaluated_sentences) <= 0:
-    return set()
-    #raise ValueError("Collections must contain at least 1 sentence.")
+    """
+    Returns LCS_u(r_i, C) which is the LCS score of the union longest common
+    subsequence between reference sentence ri and candidate summary C. For example
+    if r_i= w1 w2 w3 w4 w5, and C contains two sentences: c1 = w1 w2 w6 w7 w8 and
+    c2 = w1 w3 w8 w9 w5, then the longest common subsequence of r_i and c1 is
+    “w1 w2” and the longest common subsequence of r_i and c2 is “w1 w3 w5”. The
+    union longest common subsequence of r_i, c1, and c2 is “w1 w2 w3 w5” and
+    LCS_u(r_i, C) = 4.
+    Args:
+      evaluated_sentences: The sentences that have been picked by the summarizer
+      reference_sentence: One of the sentences in the reference summaries
+    Returns:
+      a list of tuples, each tuple indicates (hit_unigram, unigram index in reference)
+    ValueError:
+      Raises exception if a param has len <= 0
+    """
+    if len(evaluated_sentences) <= 0:
+        return set()
+        #raise ValueError("Collections must contain at least 1 sentence.")
 
-  lcs_union = set()
-  reference_words = _split_into_words([reference_sentence])
-  combined_lcs_length = 0
-  for eval_s in evaluated_sentences:
-    evaluated_words = _split_into_words([eval_s])
-    lcs = set(_recon_lcs(reference_words, evaluated_words))
-    lcs_union = lcs_union.union(lcs) # a list of tuple (hit_unigram, index in reference)
+    lcs_union = set()
+    reference_words = _split_into_words([reference_sentence])
+    combined_lcs_length = 0
+    for eval_s in evaluated_sentences:
+        evaluated_words = _split_into_words([eval_s])
+        lcs = set(_recon_lcs(reference_words, evaluated_words))
+        # a list of tuple (hit_unigram, index in reference)
+        lcs_union = lcs_union.union(lcs)
 
-  return lcs_union
+    return lcs_union
 
 
 def rouge_l_summary_level(evaluated_sentences, reference_sentences):
-  """
-  Computes ROUGE-L (summary level) of two text collections of sentences.
-  http://research.microsoft.com/en-us/um/people/cyl/download/papers/
-  rouge-working-note-v1.3.1.pdf
-  Calculated according to:
-  R_lcs = SUM(1, u)[LCS<union>(r_i,C)]/m
-  P_lcs = SUM(1, u)[LCS<union>(r_i,C)]/n
-  F_lcs = ((1 + beta^2)*R_lcs*P_lcs) / (R_lcs + (beta^2) * P_lcs)
-  where:
-  SUM(i,u) = SUM from i through u
-  u = number of sentences in reference summary
-  C = Candidate summary made up of v sentences
-  m = number of words in reference summary
-  n = number of words in candidate summary
-  Args:
-    evaluated_sentences: list of sentences string
-    reference_sentence: list of sentences string
-  Returns:
-    3 float: F-measure score, Precision score, Recall score
-  Raises:
-    ValueError: raises exception if a param has len <= 0
-  """
-  if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
-    return 0.0, 0.0, 0.0
-    #raise ValueError("Collections must contain at least 1 sentence.")
+    """
+    Computes ROUGE-L (summary level) of two text collections of sentences.
+    http://research.microsoft.com/en-us/um/people/cyl/download/papers/
+    rouge-working-note-v1.3.1.pdf
+    Calculated according to:
+    R_lcs = SUM(1, u)[LCS<union>(r_i,C)]/m
+    P_lcs = SUM(1, u)[LCS<union>(r_i,C)]/n
+    F_lcs = ((1 + beta^2)*R_lcs*P_lcs) / (R_lcs + (beta^2) * P_lcs)
+    where:
+    SUM(i,u) = SUM from i through u
+    u = number of sentences in reference summary
+    C = Candidate summary made up of v sentences
+    m = number of words in reference summary
+    n = number of words in candidate summary
+    Args:
+      evaluated_sentences: list of sentences string
+      reference_sentence: list of sentences string
+    Returns:
+      3 float: F-measure score, Precision score, Recall score
+    Raises:
+      ValueError: raises exception if a param has len <= 0
+    """
+    if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
+        return 0.0, 0.0, 0.0
+        #raise ValueError("Collections must contain at least 1 sentence.")
 
-  # unigram dictionary for reference and evaluated sentences
-  ref_1gram_dict, m = _get_word_ngrams(1, reference_sentences)
-  eval_1gram_dict, n = _get_word_ngrams(1, evaluated_sentences)
+    # unigram dictionary for reference and evaluated sentences
+    ref_1gram_dict, m = _get_word_ngrams(1, reference_sentences)
+    eval_1gram_dict, n = _get_word_ngrams(1, evaluated_sentences)
 
-  total_hits = 0
-  for ref_s in reference_sentences:
-    ref_hits = list(_union_lcs(evaluated_sentences, ref_s))
-    for w in ref_hits:
-      # bookkeeping to clip over counting everytime a hit is found,
-      # it is deducted from both ref and eval unigram count.
-	  # If a unigram count already involve in one LCS match 
-      # then it will not be counted if it match another token in the ref unit. 
-      # This will make sure LCS score is always lower than unigram score
-      if ref_1gram_dict[w[0]] > 0 and eval_1gram_dict[w[0]] > 0:
-        total_hits += 1
-        ref_1gram_dict[w[0]] -= 1
-        eval_1gram_dict[w[0]] -= 1
-  return _f_p_r_1(total_hits, m, n)
+    total_hits = 0
+    for ref_s in reference_sentences:
+        ref_hits = list(_union_lcs(evaluated_sentences, ref_s))
+        for w in ref_hits:
+            # bookkeeping to clip over counting everytime a hit is found,
+            # it is deducted from both ref and eval unigram count.
+            # If a unigram count already involve in one LCS match
+            # then it will not be counted if it match another token in the ref unit.
+            # This will make sure LCS score is always lower than unigram score
+            if ref_1gram_dict[w[0]] > 0 and eval_1gram_dict[w[0]] > 0:
+                total_hits += 1
+                ref_1gram_dict[w[0]] -= 1
+                eval_1gram_dict[w[0]] -= 1
+    return _f_p_r_1(total_hits, m, n)
+
 
 '''
 def rouge(hypotheses, references):
