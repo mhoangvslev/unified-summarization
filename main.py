@@ -79,6 +79,7 @@ tf.app.flags.DEFINE_string('pretrained_rewriter_path', '', 'pretrained rewriter 
 tf.app.flags.DEFINE_float('selector_loss_wt', 5.0, 'weight of selector loss when end2end')
 tf.app.flags.DEFINE_boolean('inconsistent_loss', True, 'whether to minimize inconsistent loss when end2end')
 tf.app.flags.DEFINE_integer('inconsistent_topk', 3, 'choose top K word attention to compute inconsistent loss')
+tf.app.flags.DEFINE_boolean('update_attention', False, 'whether or not update sentence-level attention and word-level attention')
 
 # Hyperparameters for both selector and rewriter
 tf.app.flags.DEFINE_integer('batch_size', 16, 'minibatch size')

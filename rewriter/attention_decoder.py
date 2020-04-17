@@ -27,7 +27,7 @@ import pdb
 # In the future, it would make more sense to write variants on the attention mechanism using the new seq2seq library for tensorflow 1.0: https://www.tensorflow.org/api_guides/python/contrib.seq2seq#Attention
 def attention_decoder_one_step(decoder_input, prev_state, encoder_states, enc_padding_mask, cell, \
                                prev_context=None, use_coverage=False, prev_coverage=None, \
-                               selector_probs=None, enc_sent_id_mask=None):
+                               selector_probs=None, enc_sent_id_mask=None, update_attention=False):
   """
   Args:
     decoder_input: 2D Tensors [batch_size x input_size].
@@ -114,9 +114,14 @@ def attention_decoder_one_step(decoder_input, prev_state, encoder_states, enc_pa
             selector_probs_projected = tf.gather_nd(selector_probs, indices) # shape (batch_size, attn_len)
             attn_dist *= selector_probs_projected # shape (batch_size, attn_len) 
             attn_dist *= enc_padding_mask
+            
             masked_sums = tf.reduce_sum(attn_dist, axis=1, keep_dims=True) # shape (batch_size, 1)
             attn_dist = attn_dist / masked_sums  # re-normalize
-            return attn_dist_norescale, attn_dist
+
+            selector_probs_updated = tf.reduce_mean(attn_dist * selector_probs_projected * enc_padding_mask)
+            attn_dist_norescale_updated = (attn_dist_norescale * enc_padding_mask) / tf.reduce_sum(attn_dist_norescale, axis=1, keep_dims=True)
+            attn_dist_updated = (attn_dist * selector_probs_updated) / tf.reduce_sum(attn_dist, axis=1, keep_dims=True)
+            return (attn_dist_norescale, attn_dist) if update_attention else (attn_dist_norescale_updated, attn_dist_updated)
           else:
             attn_dist *= enc_padding_mask # apply mask, attention probabilities of pad tokens will be 0
             masked_sums = tf.reduce_sum(attn_dist, axis=1, keep_dims=True) # shape (batch_size, 1)

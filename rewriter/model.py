@@ -181,7 +181,8 @@ class Rewriter(object):
                                                 use_coverage=hps.coverage, \
                                                 prev_coverage=prev_coverage, \
                                                 selector_probs=selector_probs, \
-                                                enc_sent_id_mask=enc_sent_id_mask)
+                                                enc_sent_id_mask=enc_sent_id_mask, \
+                                                update_attention=FLAGS.update_attention)
 
     return output, out_state, attn_dist_norescale, attn_dist, context_vector, p_gen, coverage
 
