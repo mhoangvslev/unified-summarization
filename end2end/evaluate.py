@@ -41,7 +41,7 @@ class End2EndEvaluator(object):
     if FLAGS.mode == 'evalall':
       if FLAGS.load_best_eval_model:
         tf.logging.info('Loading best eval checkpoint')
-        ckpt_path = util.load_ckpt(self._saver, self._sess, ckpt_dir='eval'+FLAGS.eval_method)
+        ckpt_path = util.load_ckpt(self._saver, self._sess, ckpt_dir='eval_'+FLAGS.eval_method)
       elif FLAGS.eval_ckpt_path:
         ckpt_path = util.load_ckpt(self._saver, self._sess, ckpt_path=FLAGS.eval_ckpt_path)
       else:

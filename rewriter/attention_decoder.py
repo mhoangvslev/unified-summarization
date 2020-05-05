@@ -118,10 +118,16 @@ def attention_decoder_one_step(decoder_input, prev_state, encoder_states, enc_pa
             masked_sums = tf.reduce_sum(attn_dist, axis=1, keep_dims=True) # shape (batch_size, 1)
             attn_dist = attn_dist / masked_sums  # re-normalize
 
-            selector_probs_updated = tf.reduce_mean(attn_dist * selector_probs_projected * enc_padding_mask)
-            attn_dist_norescale_updated = (attn_dist_norescale * enc_padding_mask) / tf.reduce_sum(attn_dist_norescale, axis=1, keep_dims=True)
-            attn_dist_updated = (attn_dist * selector_probs_updated) / tf.reduce_sum(attn_dist, axis=1, keep_dims=True)
-            return (attn_dist_norescale, attn_dist) if update_attention else (attn_dist_norescale_updated, attn_dist_updated)
+            if ( update_attention ):
+              attn_dist_norescale_updated = attn_dist
+              attn_dist_norescale_updated = attn_dist_norescale_updated / tf.reduce_sum(attn_dist_norescale_updated, axis=1, keep_dims=True)
+              
+              selector_probs_updated = tf.reduce_sum(attn_dist * selector_probs_projected) / attention_vec_size
+              attn_dist_updated = (attn_dist * selector_probs_updated) 
+              attn_dist_updated = attn_dist_updated / tf.reduce_sum(attn_dist_updated, axis=1, keep_dims=True)
+              return attn_dist_norescale_updated, attn_dist_updated
+            else:
+              return attn_dist_norescale, attn_dist
           else:
             attn_dist *= enc_padding_mask # apply mask, attention probabilities of pad tokens will be 0
             masked_sums = tf.reduce_sum(attn_dist, axis=1, keep_dims=True) # shape (batch_size, 1)

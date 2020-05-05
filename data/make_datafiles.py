@@ -322,14 +322,11 @@ if __name__ == '__main__':
 
     # Read the tokenized stories, do a little postprocessing then write to bin files
     upBound = len(os.listdir(tokenized_stories_dir))
-    sepIdx = round(validation_rate * upBound)
-    halfOfRest = round((upBound - sepIdx)/2)
-    write_to_bin(os.path.join(finished_files_dir, "train.bin"),
-                 lowerBound=0, upperBound=sepIdx, makevocab=True)
-    write_to_bin(os.path.join(finished_files_dir, "val.bin"),
-                 lowerBound=sepIdx, upperBound=sepIdx+halfOfRest)
-    write_to_bin(os.path.join(finished_files_dir, "test.bin"),
-                 lowerBound=sepIdx+halfOfRest, upperBound=upBound)
+    sepIdx = round((1-validation_rate) * upBound)
+    halfOfRest = round(sepIdx/2)
+    write_to_bin(os.path.join(finished_files_dir, "test.bin"), lowerBound=0, upperBound=halfOfRest)
+    write_to_bin(os.path.join(finished_files_dir, "val.bin"), lowerBound=halfOfRest, upperBound=sepIdx)
+    write_to_bin(os.path.join(finished_files_dir, "train.bin"), lowerBound=sepIdx, upperBound=upBound, makevocab=True)
 
     # Extractive summary
     with open(os.path.join(finished_files_dir,'extract_info.pkl'), 'wb') as output_file:
