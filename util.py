@@ -21,7 +21,20 @@ import time
 import os
 import numpy as np
 import pdb
+from tensorflow.python.client import device_lib
+
 FLAGS = tf.app.flags.FLAGS
+
+def get_available_gpus():
+    gpus_list_file = os.path.join(os.getcwd(), "..", "gpus.txt")
+    lines = open(os.path.realpath(gpus_list_file), "r").readlines()
+    gpus = [ str(line) for line in lines if not str(line).startswith("#") ]
+
+    if( gpus[0] == "all"):
+      local_device_protos = device_lib.list_local_devices()
+      gpus = [str(x.name) for x in local_device_protos if x.device_type == 'GPU']
+    
+    return gpus if len(gpus) > 0 else ['/gpu:0']
 
 def get_config():
   """Returns config for tf.session"""

@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import tensorflow as tf
+from util import get_available_gpus
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -54,8 +55,9 @@ class SelectorRewriter(object):
     gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
 
     # Clip the gradients
-    with tf.device("/gpu:0"):
-      grads, global_norm = tf.clip_by_global_norm(gradients, hps.max_grad_norm)
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        grads, global_norm = tf.clip_by_global_norm(gradients, hps.max_grad_norm)
 
     # Add a summary
     tf.summary.scalar('global_norm', global_norm)
@@ -63,8 +65,9 @@ class SelectorRewriter(object):
     # Apply adagrad optimizer
     tf.logging.info('Using Adagrad optimizer')
     optimizer = tf.train.AdagradOptimizer(hps.lr, initial_accumulator_value=hps.adagrad_init_acc)
-    with tf.device("/gpu:0"):
-      self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 
 
   def build_graph(self):
@@ -73,8 +76,10 @@ class SelectorRewriter(object):
     t0 = time.time()
     self._selector._add_placeholders()
     self._rewriter._add_placeholders()
-    with tf.device("/gpu:0"):
-      self._selector._add_sent_selector()
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        self._selector._add_sent_selector()
+        
       self._rewriter._add_seq2seq(selector_probs=self._selector.probs)
       if self._hps.inconsistent_loss and self._rewriter._graph_mode != 'greedy_search':
         self._inconsistent_loss = self._add_inconsistent_loss()

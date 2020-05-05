@@ -22,6 +22,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
+from util import get_available_gpus
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -215,16 +216,18 @@ class SentenceSelector(object):
     gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
 
     # Clip the gradients
-    with tf.device("/gpu:0"):
-      grads, global_norm = tf.clip_by_global_norm(gradients, hps.max_grad_norm)
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        grads, global_norm = tf.clip_by_global_norm(gradients, hps.max_grad_norm)
 
     # Add a summary
     tf.summary.scalar('global_norm', global_norm)
 
     # Apply adagrad optimizer
     optimizer = tf.train.AdagradOptimizer(hps.lr, initial_accumulator_value=hps.adagrad_init_acc)
-    with tf.device("/gpu:0"):
-      self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 
 
   def build_graph(self):
@@ -232,8 +235,9 @@ class SentenceSelector(object):
     tf.logging.info('Building graph...')
     t0 = time.time()
     self._add_placeholders()
-    with tf.device("/gpu:0"):
-      self._add_sent_selector()
+    for gpu in get_available_gpus():
+      with tf.device(gpu):
+        self._add_sent_selector()
     self.global_step = tf.Variable(0, name='global_step', trainable=False)
     if self._hps.mode == 'train':
       self._add_train_op()
