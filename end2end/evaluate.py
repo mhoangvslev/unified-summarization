@@ -2,7 +2,7 @@ import os
 import time
 import tensorflow as tf
 from batcher import Batcher
-import end2end.beam_search
+from end2end import beam_search
 import data
 import pickle as pk
 import json

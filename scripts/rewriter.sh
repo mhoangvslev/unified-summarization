@@ -1,6 +1,6 @@
-if [ ! $# -eq 4 ]; then
-    echo "Mismatch number of arguments. Given $#, required 4"
-    echo "sh script/rewriter.sh <MODE> <path/to/data> <EXP_NAME> <INCONSISTENCY_LOST>"
+if [ ! $# -eq 3 ]; then
+    echo "Mismatch number of arguments. Given $#, required 3"
+    echo "sh script/rewriter.sh <MODE> <path/to/data> <EXP_NAME>"
     exit 1
 fi
 
@@ -22,17 +22,17 @@ HIDDEN_DIM=256
 
 # for eval mode
 
-DECODE_METHOD='beam'
+DECODE_METHOD="beam"
 START_EVAL=10000
-INCONSISTENT_LOSS=$1; shift
+INCONSISTENT_LOSS="True"
 case "$INCONSISTENT_LOSS" in
   "True"*)
     SINGLE_PASS="False"
-    EVAL_METHOD='loss'
+    EVAL_METHOD="loss"
     ;;
   "False"*)
     SINGLE_PASS="True"
-    EVAL_METHOD='rouge'
+    EVAL_METHOD="rouge"
     ;;
 esac
 
@@ -60,6 +60,7 @@ if [ "$MODE" = "train" ]; then
   # Resume training
   echo "Begin/Resume training..."
   while [ $LAST_CKPT -lt 81000 ]; do
+    echo $LAST_CKPT    
     # 1-10000
     if [ $LAST_CKPT -ge 0 -a $LAST_CKPT -lt 10000 ]; then
       python main.py --model=rewriter --mode=train --data_path=$TRAIN_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --hidden_dim_rewriter=$HIDDEN_DIM --max_enc_steps=50 --max_dec_steps=15 --max_train_iter=$((10000-$LAST_CKPT)) --save_model_every=$SAVE_MODEL_EVERY --model_max_to_keep=$MAX_TO_KEEP
@@ -89,7 +90,13 @@ if [ "$MODE" = "train" ]; then
       python main.py --model=rewriter --mode=train --data_path=$TRAIN_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --hidden_dim_rewriter=$HIDDEN_DIM --max_enc_steps=400 --max_dec_steps=100 --coverage=True --convert_to_coverage_model=True
       python main.py --model=rewriter --mode=train --data_path=$TRAIN_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --hidden_dim_rewriter=$HIDDEN_DIM --max_enc_steps=400 --max_dec_steps=100 --max_train_iter=1000 --save_model_every=200 --coverage=True --model_max_to_keep=$MAX_TO_KEEP
     fi
+
     LAST_CKPT=$(head -n 1 log/rewriter/$EXP_NAME/train/checkpoint | sed 's/[^0-9]*//g');
+    if [ -z $LAST_CKPT ]; then 
+      echo "Fatal error, exiting..."
+      exit 1
+    fi
+    
   done
 elif [ "$MODE" = "eval" ]; then
   python main.py --model=rewriter --mode=eval --data_path=$VAL_PATH --vocab_path=$VOCAB_PATH --log_root=log --exp_name=$EXP_NAME --hidden_dim_rewriter=$HIDDEN_DIM --max_enc_steps=400 --max_dec_steps=120 --coverage=False --batch_size=64 --eval_method=$EVAL_METHOD --decode_method=$DECODE_METHOD --start_eval_rouge=$START_EVAL --save_model_every=$SAVE_MODEL_EVERY --single_pass=$SINGLE_PASS

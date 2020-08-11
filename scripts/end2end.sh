@@ -1,11 +1,6 @@
-if [ ! $# -eq 5 ]; then
-    echo "Mismatch number of arguments. Given $#, required 5"
-    echo "sh script/end2end.sh <MODE> <path/to/data> <EXP_NAME> <INCONSISTENCY_LOST> <UPDATE_ATTENTION>"
-    exit 1
-fi
-
-if [ ! "$4" = "True" -a ! "$4" = "False" ]; then
-    echo "<INCONSISTENCY_LOST> must be either True or False"
+if [ ! $# -eq 3 ]; then
+    echo "Mismatch number of arguments. Given $#, required 3"
+    echo "sh script/end2end.sh <MODE> <path/to/data> <EXP_NAME>"
     exit 1
 fi
 
@@ -34,21 +29,21 @@ MAX_ART_LEN=50
 MAX_ENC_STEPS=600
 LR=0.01
 SELECTOR_LOSS_WT=5.0
-INCONSISTENT_LOSS=$1; shift
+INCONSISTENT_LOSS="True"
 INCONSISTENT_TOPK=3
-UPDATE_ATTENTION="$1"; shift;
+UPDATE_ATTENTION="False"
 
 # for eval mode
-DECODE_METHOD='greedy'
+DECODE_METHOD="greedy"
 START_EVAL=1000
 case "$INCONSISTENT_LOSS" in
   "True"*)
     SINGLE_PASS="False"
-    EVAL_METHOD='loss'
+    EVAL_METHOD="loss"
     ;;
   "False"*)
     SINGLE_PASS="True"
-    EVAL_METHOD='rouge'
+    EVAL_METHOD="rouge"
     ;;
 esac
 

@@ -20,12 +20,12 @@ EXP_NAME="$1"; shift;
 HIDDEN_DIM=200 
 MAX_ITER=50000
 BATCH_SIZE=32
-SAVE_MODEL_EVERY=10
+SAVE_MODEL_EVERY=1000
 MAX_TO_KEEP=3
-#PRETRAINED=''  # uncomment this if you have pretrained selector model
+#PRETRAINED=""  # uncomment this if you have pretrained selector model
 
 # for evalall mode
-SELECT_METHOD='prob'
+SELECT_METHOD="prob"
 MAX_SELECT=30
 THRES=0.5
 SAVE_PKL=True
